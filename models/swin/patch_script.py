@@ -38,14 +38,12 @@ for image_file, mask_file in image_mask_pairs:
     else:
         print("mismatched files")
 
-dataset = md.MRIDataset(image_mask_pairs=image_mask_pairs)
-
 # Split image-mask pairs into training and validation
 train_pairs, val_pairs = train_test_split(image_mask_pairs, test_size=0.2, random_state=55)
 
 # Create datasets
-train_dataset = md.MRIDataset(image_mask_pairs=train_pairs)
-val_dataset = md.MRIDataset(image_mask_pairs=val_pairs)
+train_dataset = md.MRIDatasetWithPatches(image_mask_pairs=train_pairs)
+val_dataset = md.MRIDatasetWithPatches(image_mask_pairs=val_pairs)
 
 if __name__ == "__main__":
     mp.set_start_method('spawn', force=True)  # Ensure proper start method for multiprocessing
@@ -55,10 +53,10 @@ if __name__ == "__main__":
 
     # Create data loaders
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=8, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False, num_workers=8, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False, num_workers=4, pin_memory=True)
 
     # Initialize the model and move it to the appropriate device
     model = m.Swin3DSegmentation(input_channels=1, num_classes=210).to(device)
     images, masks = next(iter(train_loader))
     images = images.to(device)
-    m.train(model, train_loader, val_loader, epochs=10, device=device)
+    m.train(model, train_loader, val_loader, epochs=10, device=device, save_path="patch_model.pth")
