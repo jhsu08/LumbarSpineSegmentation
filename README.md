@@ -1,5 +1,5 @@
 # Lumbar Spine Segmentation
-Elyas Amin, Jeffrey
+Elyas Amin, Jeffrey Hsu
 
 ## Overview
 This repository provides scripts and tools for performing 3D segmentation of lumbar spine MRI images using state-of-the-art transformer-based models such as **SwinUNETR**. The goal is to process and segment high-resolution medical images efficiently while addressing the challenges of memory usage and computational costs.
