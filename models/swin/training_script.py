@@ -46,9 +46,9 @@ class LabelMapper:
         # Apply mapping to the mask
         return mask.apply_(lambda x: self.label_mapping.get(x, 0))  # Default to 0 for unknown labels
 
-def train_epoch(model, train_loader, optimizer, loss_function, scaler, device, roi_size, sw_batch_size, overlap=0.25):
+def train_epoch(model, train_loader, optimizer, loss_function, scaler, device, roi_size, sw_batch_size, overlap=0.5):
     """
-    Perform one epoch of training with sliding window inference for validation.
+    Perform one epoch of training with sliding window inference.
 
     Args:
         model (torch.nn.Module): The model to train.
@@ -102,7 +102,7 @@ def train_epoch(model, train_loader, optimizer, loss_function, scaler, device, r
     return train_loss
 
 
-def validate_epoch(model, val_loader, loss_function, dice_metric, device, roi_size, sw_batch_size, overlap=0.25):
+def validate_epoch(model, val_loader, loss_function, dice_metric, device, roi_size, sw_batch_size, overlap=0.5):
     """
     Perform validation with sliding window inference.
 
@@ -129,8 +129,9 @@ def validate_epoch(model, val_loader, loss_function, dice_metric, device, roi_si
         AsDiscrete(argmax=True, to_onhot=20)    # Get class predictions
     ])
 
-    with torch.no_grad():  # No gradients needed for validation
+    with torch.no_grad():
         for val_data in tqdm(val_loader, desc="Validating"):
+
             # Load the data and move to device
             val_inputs = val_data[0].to(device)
             val_labels = val_data[1].to(device)
@@ -269,6 +270,7 @@ def train_model(
 
 
 if __name__ == "__main__":
+
     image_files = []
     mask_files = []
 
@@ -380,7 +382,8 @@ if __name__ == "__main__":
             image_only=False,
             transform_with_metadata=False,
         )
-    
+
+        # Initialize DataLoaders
         train_loader = DataLoader(train_ds, batch_size=1, shuffle=True, num_workers=10)
         val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=10)
 
@@ -392,8 +395,10 @@ if __name__ == "__main__":
             feature_size=48,
             use_checkpoint=True,
         ).to(device)
-    
+
+        # Load initial model weights
         model.load_from(weights=torch.load("./model_swinvit.pt", map_location=device))
+        # Use this if loading state dictionary:
         # state_dict = torch.load("model_checkpoints_dice_loss/2/fold_1/model_epoch_25.pth", map_location=device, weights_only=True)
         # model.load_state_dict(state_dict)
         
@@ -421,6 +426,5 @@ if __name__ == "__main__":
             device=device,
             save_dir=f"model_checkpoints/fold_{fold}"
         )
-    
         
         fold += 1
