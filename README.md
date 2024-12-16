@@ -1,4 +1,4 @@
-# LumbarSpineSegmentation
+# Lumbar Spine Segmentation
 Elyas Amin, Jeffrey
 
 ## Overview
